@@ -641,10 +641,15 @@ select.fs.ph{color:#bfbfbf}
   <div class="submenu" id="sub-mfm" style="display:none">
     <div class="submenu-item disabled">人工提存</div>
     <div class="submenu-item disabled">人工提存记录</div>
+    <div class="submenu-item disabled">会员人工加减额</div>
+    <div class="submenu-item disabled">会员人工加额记录</div>
+    <div class="submenu-item disabled">会员人工加额审核</div>
+    <div class="submenu-item disabled">会员人工减额记录</div>
     <div class="submenu-item disabled">充值订单记录</div>
     <div class="submenu-item disabled">未上分三方充值订单</div>
     <div class="submenu-item disabled">支付方式排序</div>
-    <div class="submenu-item disabled">提现审核记录</div>
+    <div class="submenu-item" id="si-warec" onclick="switchPage('warec',this)">提现审核记录</div>
+    <div class="submenu-item disabled">人工加额审核记录</div>
     <div class="submenu-item" id="si-worder" onclick="switchPage('worder',this)">提现订单记录</div>
     <div class="submenu-item" id="si-maudit" onclick="switchPage('maudit',this)">会员提现审核</div>
   </div>
@@ -1204,7 +1209,26 @@ select.fs.ph{color:#bfbfbf}
       </div>
       <div class="wm-panel hidden" id="wm-p-cond"><div class="wm-ph">提现条件配置（现有功能，非本次范围）</div></div>
       <div class="wm-panel hidden" id="wm-p-level"><div class="wm-ph">提现等级配置（现有功能，非本次范围）</div></div>
-      <div class="wm-panel hidden" id="wm-p-other"><div class="wm-ph">其他提现配置（现有功能，非本次范围）</div></div>
+      <div class="wm-panel hidden" id="wm-p-other">
+        <div class="wo-form">
+          <div class="wo-row">
+            <span class="wo-label">开启玩家首次提款信息绑定</span>
+            <label class="sw"><input type="checkbox" class="sw-input" checked><span class="sw-track"></span><span class="sw-knob"></span></label>
+          </div>
+          <div class="wo-row">
+            <span class="wo-label">相同提现资料可同时绑定会员数量：</span>
+            <div class="wo-num-col">
+              <input class="fin wo-num" id="wo-bindnum" type="number" min="0" step="1" value="1" oninput="woBindCheck()" onblur="woBindCheck()">
+              <div class="hint" id="wo-bindnum-hint" style="display:none">请输入不小于0的整数</div>
+            </div>
+          </div>
+          <div class="wo-hint">仅对 CPF / PHONE 生效；0 表示不限制。</div>
+          <div class="wo-actions">
+            <button class="btn btn-blue" onclick="woBindSave()">保 存</button>
+            <button class="btn btn-white" onclick="woBindReset()">重 置</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- PAGE: 会员提现审核 -->
@@ -1292,6 +1316,95 @@ select.fs.ph{color:#bfbfbf}
       <div class="pagination"><div class="pg-info">共 <b>2</b> 条数据</div><div class="pg-controls"><div class="pg-btn active">1</div><select class="pg-size"><option>50 条/页</option></select></div></div>
     </div>
 
+    <!-- PAGE: 提现审核记录 -->
+    <div id="pg-warec" style="display:none">
+      <div class="filter-area">
+        <div class="filter-row">
+          <div class="filter-item"><span class="filter-label">申请时间：</span><input class="f-input" placeholder="申请时间(开始)" style="min-width:120px"><span style="margin:0 4px">→</span><input class="f-input" placeholder="申请时间(结束)" style="min-width:120px"></div>
+          <div class="filter-item"><span class="filter-label">订单号：</span><input class="f-input" placeholder="订单号" style="min-width:160px"></div>
+          <div class="filter-item"><span class="filter-label">三方订单号：</span><input class="f-input" placeholder="三方订单号" style="min-width:160px"></div>
+          <div class="filter-item"><span class="filter-label">会员查询：</span><select class="f-select" style="min-width:88px"><option>会员ID</option></select><input class="f-input" placeholder="请输入会员ID" style="min-width:140px"></div>
+        </div>
+        <div class="filter-row">
+          <div class="filter-item"><span class="filter-label">订单状态：</span><select class="f-select"><option>订单状态</option><option>审核完成</option><option>待审核</option></select></div>
+          <div class="filter-item"><span class="filter-label">提现金额：</span><input class="f-input" placeholder="提现金额(最小)" style="min-width:110px"><span style="margin:0 4px">~</span><input class="f-input" placeholder="提现金额(最大)" style="min-width:110px"></div>
+          <div class="filter-item" style="margin-left:auto"><button class="btn btn-white" onclick="toast('已重置')">重 置</button><button class="btn btn-query" style="margin-left:10px" onclick="toast('查询中...')">查 询</button></div>
+        </div>
+      </div>
+      <div class="action-bar"><button class="btn btn-blue" onclick="toast('导出中...')">导 出</button></div>
+      <div class="table-wrap"><div class="table-scroll">
+        <table>
+          <thead><tr>
+            <th>会员ID</th><th>手机号(会员账号)</th><th>订单号</th><th class="col-new">三方订单号</th><th>订单状态</th><th>大额提款</th><th>提现金额</th><th>申请时间</th><th>审核人</th><th>审核时间</th><th>审核用时</th><th>备注</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td><a style="color:#0961BD;cursor:pointer">94042764</a> <span class="copy-icon">⧉</span></td>
+              <td>11978967896</td>
+              <td>5402426417334624256 <span class="copy-icon">⧉</span></td>
+              <td class="col-new">5402426417334624256 <span class="copy-icon">⧉</span></td>
+              <td><span class="wbadge wb-ok">审核完成</span></td>
+              <td>否</td>
+              <td>20(BRL)</td>
+              <td>2026-09-07 11:43:27 (UTC-3)</td>
+              <td>-</td><td>-</td><td>-</td><td>-</td>
+            </tr>
+            <tr>
+              <td><a style="color:#0961BD;cursor:pointer">63098767</a> <span class="copy-icon">⧉</span></td>
+              <td>11998769876</td>
+              <td>5402421280553738240 <span class="copy-icon">⧉</span></td>
+              <td class="col-new">5402421280553738240 <span class="copy-icon">⧉</span></td>
+              <td><span class="wbadge wb-ok">审核完成</span></td>
+              <td>否</td>
+              <td>15(BRL)</td>
+              <td>2026-09-07 11:38:26 (UTC-3)</td>
+              <td>-</td><td>-</td><td>-</td><td>-</td>
+            </tr>
+            <tr>
+              <td><a style="color:#0961BD;cursor:pointer">52657084</a> <span class="copy-icon">⧉</span></td>
+              <td>11967896789</td>
+              <td>5402287363473449960 <span class="copy-icon">⧉</span></td>
+              <td class="col-new">5402287363473449960 <span class="copy-icon">⧉</span></td>
+              <td><span class="wbadge wb-ok">审核完成</span></td>
+              <td>否</td>
+              <td>50(BRL)</td>
+              <td>2026-09-07 09:28:31 (UTC-3)</td>
+              <td>-</td><td>-</td><td>-</td><td>-</td>
+            </tr>
+            <tr>
+              <td><a style="color:#0961BD;cursor:pointer">65563340</a> <span class="copy-icon">⧉</span></td>
+              <td>11988088080</td>
+              <td>5402067461147713536 <span class="copy-icon">⧉</span></td>
+              <td class="col-new">-</td>
+              <td><span class="wbadge wb-ok">审核完成</span></td>
+              <td>是</td>
+              <td>10(BRL)</td>
+              <td>2026-09-07 05:55:12 (UTC-3)</td>
+              <td>一审：bxspencer01</td>
+              <td>一审：2026-09-07 05:55:39 (UTC-3)</td>
+              <td>一审：0分钟</td>
+              <td>一审：-</td>
+            </tr>
+            <tr>
+              <td><a style="color:#0961BD;cursor:pointer">99828722</a> <span class="copy-icon">⧉</span></td>
+              <td>11900100201</td>
+              <td>5338398745630466048 <span class="copy-icon">⧉</span></td>
+              <td class="col-new">-</td>
+              <td><span class="wbadge wb-ok">审核完成</span></td>
+              <td>是</td>
+              <td>500(BRL)</td>
+              <td>2026-07-26 08:28:24 (UTC-3)</td>
+              <td>一审：bxspencer01</td>
+              <td>一审：2026-08-08 03:36:43 (UTC-3)</td>
+              <td>一审：2884分钟</td>
+              <td>一审：-</td>
+            </tr>
+          </tbody>
+        </table>
+      </div></div>
+      <div class="pagination"><div class="pg-info">共 <b>5</b> 条数据</div><div class="pg-controls"><div class="pg-btn active">1</div><select class="pg-size"><option>50 条/页</option></select></div></div>
+    </div>
+
     <!-- PAGE: 提现订单记录 -->
     <div id="pg-worder" style="display:none">
       <div class="filter-area">
@@ -1299,6 +1412,7 @@ select.fs.ph{color:#bfbfbf}
           <div class="filter-item"><span class="filter-label">申请时间：</span><input class="f-input" placeholder="申请时间(开始)" style="min-width:120px"><span style="margin:0 4px">→</span><input class="f-input" placeholder="申请时间(结束)" style="min-width:120px"></div>
           <div class="filter-item"><span class="filter-label">出款时间：</span><input class="f-input" placeholder="出款时间(开始)" style="min-width:120px"><span style="margin:0 4px">→</span><input class="f-input" placeholder="出款时间(结束)" style="min-width:120px"></div>
           <div class="filter-item"><span class="filter-label">订单号：</span><input class="f-input" placeholder="订单号" style="min-width:150px"></div>
+          <div class="filter-item"><span class="filter-label">三方订单号：</span><input class="f-input" placeholder="三方订单号" style="min-width:150px"></div>
           <div class="filter-item"><span class="filter-label">钱包币种：</span><select class="f-select"><option>钱包币种</option><option>BRL</option></select></div>
         </div>
         <div class="filter-row">
@@ -1333,13 +1447,14 @@ select.fs.ph{color:#bfbfbf}
       <div class="table-wrap"><div class="table-scroll">
         <table>
           <thead><tr>
-            <th>会员ID</th><th>手机号(会员账号)</th><th>提款订单号</th><th>提款金额</th><th>手续费</th><th>出款金额</th><th>订单状态</th><th>客户端状态</th><th>后台备注</th><th>客户端备注</th><th>提款人姓名</th><th>提款方式</th><th class="col-new">账户类型</th><th class="col-new">CPF ID</th><th>提款账号</th><th>返现比例</th><th>返现金额</th><th style="min-width:200px">提款信息</th><th>提款IP</th><th>出款方式</th><th>三方平台/提现通道</th><th>订单来源</th><th>申请时间</th><th>出款时间</th><th>账号状态</th><th>出款管理员</th>
+            <th>会员ID</th><th>手机号(会员账号)</th><th>提款订单号</th><th class="col-new">三方订单号</th><th>提款金额</th><th>手续费</th><th>出款金额</th><th>订单状态</th><th>客户端状态</th><th>后台备注</th><th>客户端备注</th><th>提款人姓名</th><th>提款方式</th><th class="col-new">账户类型</th><th class="col-new">CPF ID</th><th>提款账号</th><th>返现比例</th><th>返现金额</th><th style="min-width:200px">提款信息</th><th>提款IP</th><th>出款方式</th><th>三方平台/提现通道</th><th>订单来源</th><th>申请时间</th><th>出款时间</th><th>账号状态</th><th>出款管理员</th>
           </tr></thead>
           <tbody>
             <tr>
               <td><a style="color:#0961BD;cursor:pointer">83491174</a></td>
               <td>55900000000</td>
               <td>5392762640869367808</td>
+              <td class="col-new">-</td>
               <td>16(BRL)</td>
               <td>0</td>
               <td>16(BRL)</td>
@@ -1379,6 +1494,7 @@ select.fs.ph{color:#bfbfbf}
               <td><a style="color:#0961BD;cursor:pointer">83491180</a></td>
               <td>55911112222</td>
               <td>5392742007600603136</td>
+              <td class="col-new">5392742007600603136 <span class="copy-icon">⧉</span></td>
               <td>15(BRL)</td>
               <td>0</td>
               <td>15(BRL)</td>
@@ -1468,6 +1584,16 @@ select.fs.ph{color:#bfbfbf}
 #pg-withdraw .wm-edit:hover{border-color:#0961BD;background:#eaf3fc}
 #pg-withdraw .sw.locked .sw-track{cursor:not-allowed;opacity:.7}
 /* edit modal */
+#wm-p-other .wo-form{padding:10px 6px;max-width:900px}
+#wm-p-other .wo-row{display:flex;align-items:center;gap:16px;margin-bottom:22px}
+#wm-p-other .wo-label{font-size:14px;color:#333}
+#wm-p-other .wo-num-col{flex:1;max-width:560px}
+#wm-p-other .wo-num{width:100%}
+#wm-p-other .wo-num.err{border-color:#ff4d4f}
+#wm-p-other .wo-num.err:focus{box-shadow:0 0 0 2px rgba(255,77,79,.12)}
+#wm-p-other .hint{font-size:12px;color:#ff4d4f;margin-top:6px}
+#wm-p-other .wo-hint{font-size:12px;color:#8c8c8c;margin:-8px 0 20px}
+#wm-p-other .wo-actions{display:flex;gap:12px;justify-content:center;margin-top:6px}
 #wm-edit .modal{width:760px}
 #wm-edit .fl{width:132px;white-space:nowrap}
 #wm-edit .sw.locked .sw-track{cursor:not-allowed;opacity:.7}
@@ -3749,7 +3875,7 @@ function guideAddrChange(){
 const _origSwitchPage = switchPage;
 function switchPage(page, el){
   // hide all pages
-  ['pg-channel','pg-effect','pg-guide','pg-activity-list','pg-appstore','pg-account','pg-mafia','pg-withdraw','pg-maudit','pg-worder'].forEach(function(id){
+  ['pg-channel','pg-effect','pg-guide','pg-activity-list','pg-appstore','pg-account','pg-mafia','pg-withdraw','pg-maudit','pg-worder','pg-warec'].forEach(function(id){
     var p=document.getElementById(id); if(p) p.style.display='none';
   });
   // show requested
@@ -3771,9 +3897,10 @@ function switchPage(page, el){
     'mafia':'系统管理 / 马甲包管理',
     'withdraw':'商户财务配置 / 提现管理',
     'maudit':'商户财务管理 / 会员提现审核',
-    'worder':'商户财务管理 / 提现订单记录'
+    'worder':'商户财务管理 / 提现订单记录',
+    'warec':'商户财务管理 / 提现审核记录'
   };
-  const bcSec = {'channel':'DD后台管理','effect':'DD后台管理','guide':'DD后台管理','activity-list':'DD后台管理','appstore':'DD后台管理','account':'DD后台管理','mafia':'DD后台管理','withdraw':'DD后台管理','maudit':'DD后台管理','worder':'DD后台管理'};
+  const bcSec = {'channel':'DD后台管理','effect':'DD后台管理','guide':'DD后台管理','activity-list':'DD后台管理','appstore':'DD后台管理','account':'DD后台管理','mafia':'DD后台管理','withdraw':'DD后台管理','maudit':'DD后台管理','worder':'DD后台管理','warec':'DD后台管理'};
   const bcEl = document.getElementById('breadcrumb');
   if(bcEl){
     const txt = document.getElementById('bc-text');
@@ -6210,6 +6337,14 @@ function woMethodChange(){
       '<div>暂无数据</div></div>';
   }
 }
+function woBindCheck(){
+  var inp=document.getElementById('wo-bindnum'), hint=document.getElementById('wo-bindnum-hint');
+  var v=inp.value.trim();
+  if(v==='' || !/^\d+$/.test(v)){ inp.classList.add('err'); hint.style.display='block'; return false; }
+  inp.classList.remove('err'); hint.style.display='none'; return true;
+}
+function woBindSave(){ if(!woBindCheck()){ toast('请输入不小于0的整数',true); return; } toast('保存成功'); }
+function woBindReset(){ var i=document.getElementById('wo-bindnum'); i.value='1'; i.classList.remove('err'); document.getElementById('wo-bindnum-hint').style.display='none'; toast('已重置'); }
 function woAcctToggle(e){ if(e)e.stopPropagation(); document.getElementById('wo-acct-dd').classList.toggle('open'); }
 function woAcctPick(v){
   var txt=document.getElementById('wo-acct-text');

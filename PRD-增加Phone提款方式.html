@@ -45,7 +45,7 @@ b,strong{color:#1a1a2e}
 <div class="cover">
   <div class="cover-title">增加Phone提款方式</div>
   <div class="cover-sub">PRD 产品需求文档 · 提款方式配置 / 取款页 / 提现报表</div>
-  <div class="cover-meta"><span>版本：v1.1</span><span>更新日期：2026-09-05</span><span>作者：Laura</span></div>
+  <div class="cover-meta"><span>版本：v1.2</span><span>更新日期：2026-09-08</span><span>作者：Laura</span></div>
 </div>
 
 <div class="toc">
@@ -76,8 +76,15 @@ b,strong{color:#1a1a2e}
         <li><a href="#sr2">6.2 提现订单记录</a></li>
       </ol>
     </li>
-    <li><a href="#s6">七、中文 / 葡语文案对照表</a></li>
-    <li><a href="#s7">八、边界与异常处理</a></li>
+    <li><a href="#sb">七、提现资料绑定数量与唯一性校验</a>
+      <ol>
+        <li><a href="#sb1">7.1 后台配置（其他提现配置）</a></li>
+        <li><a href="#sb2">7.2 唯一性校验规则</a></li>
+        <li><a href="#sb3">7.3 错误提示文案（建议）</a></li>
+      </ol>
+    </li>
+    <li><a href="#s6">八、中文 / 葡语文案对照表</a></li>
+    <li><a href="#s7">九、边界与异常处理</a></li>
   </ol>
 </div>
 
@@ -85,7 +92,7 @@ b,strong{color:#1a1a2e}
 <div class="section" id="s1">
   <h1>一、需求背景</h1>
   <p>H5 取款页当前仅支持 CPF 单一提款方式。为支持巴西 PIX 场景下的多种收款标识（CPF、手机号等），并结合风控需要对不同方式设置开放门槛，需在后台<b>提现管理</b>页新增<b>提款方式配置</b>模块，由运营配置 H5 取款页可选的提款方式、展示顺序、启用状态及解锁条件。前台 H5 取款页原型已于前期完成，本期交付后台配置能力与相应的前台联动逻辑。</p>
-  <p>本期上线的提款方式为 <b>CPF</b> 与 <b>PHONE</b> 两种。本需求「增加 PHONE 提款方式」覆盖三部分：<b>后台提款方式配置</b>（第四章）、<b>前台 H5 取款页</b>（第五章）、以及<b>提现相关报表</b>字段体现（第六章：会员提现审核、提现订单记录）。</p>
+  <p>本期上线的提款方式为 <b>CPF</b> 与 <b>PHONE</b> 两种。本需求「增加 PHONE 提款方式」覆盖：<b>后台提款方式配置</b>（第四章）、<b>前台 H5 取款页</b>（第五章）、<b>提现相关报表</b>字段体现（第六章：会员提现审核、提现订单记录），以及<b>提现资料绑定数量与唯一性校验</b>（第七章）。</p>
 </div>
 
 <!-- 二 名词解释 -->
@@ -299,9 +306,49 @@ b,strong{color:#1a1a2e}
   </table>
 </div>
 
-<!-- 七 中葡对照 -->
+<!-- 七 提现资料绑定与唯一性校验 -->
+<div class="section" id="sb">
+  <h1>七、提现资料绑定数量与唯一性校验</h1>
+  <p>为防止同一提现资料被多个会员共用，新增「提现资料可绑定会员数量」配置及配套唯一性校验。<b>仅对 CPF、PHONE 两类提现资料生效。</b></p>
+
+  <h2 id="sb1">7.1 后台配置（提现管理 → 其他提现配置）</h2>
+  <p>在「提现管理 → 其他提现配置」页新增配置项，与既有「开启玩家首次提款信息绑定」开关并列，底部「保存 / 重置」：</p>
+  <table>
+    <thead><tr><th style="width:220px">字段</th><th>含义</th><th style="width:120px">控件</th><th style="width:56px">必填</th><th>输入要求</th></tr></thead>
+    <tbody>
+      <tr><td>相同提现资料可同时绑定会员数量</td><td>同一 CPF / 手机号最多可绑定的会员数量上限。</td><td>数字输入框</td><td>是</td><td>非负整数；<b>0 表示不限制</b>，≥1 为具体上限。非整数 / 负数拦截保存，提示「请输入不小于0的整数」。</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="sb2">7.2 唯一性校验规则</h2>
+  <p>当某 CPF / 手机号已绑定的会员数达到上限（配置值；0 为不限制，即不做该校验）时，不允许再绑定到其他会员。<b>以下三处均在提交 / 保存时校验并拦截：</b></p>
+  <table>
+    <thead><tr><th style="width:240px">场景</th><th>校验与处理</th></tr></thead>
+    <tbody>
+      <tr><td>客户端 · 取款页提交提现</td><td>其他会员输入已达上限的 CPF / 手机号时，<b>不允许提交</b>提现并提示错误。</td></tr>
+      <tr><td>客户端 · 提款信息管理保存</td><td>提交的 CPF / 手机号已被其他会员保存（达上限）时，<b>不允许保存</b>。</td></tr>
+      <tr><td>后台 · 会员详情修改提款信息</td><td>填写的 CPF / 手机号已被其他会员绑定（达上限）时，<b>不允许保存</b>。</td></tr>
+    </tbody>
+  </table>
+  <h3>绑定释放</h3>
+  <p>会员绑定后，若运营在后台<b>「会员详情」手动删除或更换</b>该会员的提款信息，则原 CPF / 手机号占用<b>随即释放</b>，可再次被其他会员绑定。</p>
+
+  <h2 id="sb3">7.3 错误提示文案（建议）</h2>
+  <p>以下为建议文案；前台面向巴西按客户端语言展示，葡语为建议译文，可按前台实际文案调整。</p>
+  <table>
+    <thead><tr><th style="width:210px">场景</th><th>中文</th><th>葡语（建议）</th></tr></thead>
+    <tbody>
+      <tr><td>客户端取款页 · CPF 重复</td><td>该 CPF 已被绑定，无法提交提现</td><td>Este CPF já está vinculado a outra conta e não pode ser usado.</td></tr>
+      <tr><td>客户端取款页 · 手机号重复</td><td>该手机号已被绑定，无法提交提现</td><td>Este telefone já está vinculado a outra conta e não pode ser usado.</td></tr>
+      <tr><td>客户端提款信息管理 · 保存</td><td>该 CPF / 手机号已被其他会员使用，无法保存</td><td>Este CPF / telefone já está em uso por outra conta.</td></tr>
+      <tr><td>后台会员详情 · 保存</td><td>该 CPF / 手机号已被其他会员绑定，无法保存</td><td>—（后台，中文）</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- 八 中葡对照 -->
 <div class="section" id="s6">
-  <h1>七、中文 / 葡语文案对照表</h1>
+  <h1>八、中文 / 葡语文案对照表</h1>
   <p>覆盖 H5 取款页与本需求相关的固定展示文案。葡语取自前台参考图原文，前台按客户端语言展示。<code>{金额}</code> 为动态数值。</p>
   <table>
     <thead><tr><th style="width:130px">位置</th><th style="width:230px">中文</th><th>葡语（参考原文）</th></tr></thead>
@@ -329,7 +376,7 @@ b,strong{color:#1a1a2e}
 
 <!-- 七 边界异常 -->
 <div class="section" id="s7">
-  <h1>八、边界与异常处理</h1>
+  <h1>九、边界与异常处理</h1>
   <table>
     <thead><tr><th style="width:230px">场景</th><th>处理</th></tr></thead>
     <tbody>
