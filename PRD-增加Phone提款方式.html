@@ -74,6 +74,7 @@ b,strong{color:#1a1a2e}
       <ol>
         <li><a href="#sr1">6.1 会员提现审核</a></li>
         <li><a href="#sr2">6.2 提现订单记录</a></li>
+        <li><a href="#sr3">6.3 三方订单号字段</a></li>
       </ol>
     </li>
     <li><a href="#sb">七、提现资料绑定数量与唯一性校验</a>
@@ -92,7 +93,7 @@ b,strong{color:#1a1a2e}
 <div class="section" id="s1">
   <h1>一、需求背景</h1>
   <p>H5 取款页当前仅支持 CPF 单一提款方式。为支持巴西 PIX 场景下的多种收款标识（CPF、手机号等），并结合风控需要对不同方式设置开放门槛，需在后台<b>提现管理</b>页新增<b>提款方式配置</b>模块，由运营配置 H5 取款页可选的提款方式、展示顺序、启用状态及解锁条件。前台 H5 取款页原型已于前期完成，本期交付后台配置能力与相应的前台联动逻辑。</p>
-  <p>本期上线的提款方式为 <b>CPF</b> 与 <b>PHONE</b> 两种。本需求「增加 PHONE 提款方式」覆盖：<b>后台提款方式配置</b>（第四章）、<b>前台 H5 取款页</b>（第五章）、<b>提现相关报表</b>字段体现（第六章：会员提现审核、提现订单记录），以及<b>提现资料绑定数量与唯一性校验</b>（第七章）。</p>
+  <p>本期上线的提款方式为 <b>CPF</b> 与 <b>PHONE</b> 两种。本需求「增加 PHONE 提款方式」覆盖：<b>后台提款方式配置</b>（第四章）、<b>前台 H5 取款页</b>（第五章）、<b>提现相关报表</b>字段体现（第六章：账户类型 / 手机号与三方订单号，涉及会员提现审核、提现订单记录、提现审核记录），以及<b>提现资料绑定数量与唯一性校验</b>（第七章）。</p>
 </div>
 
 <!-- 二 名词解释 -->
@@ -270,7 +271,7 @@ b,strong{color:#1a1a2e}
 <!-- 六 后台报表字段补充 -->
 <div class="section" id="sr">
   <h1>六、后台报表字段补充</h1>
-  <p>因新增 PHONE 提款方式，需在提现相关报表中体现<b>账户类型</b>及<b>手机号</b>。涉及「商户财务管理」菜单下的两张报表：<b>会员提现审核</b>、<b>提现订单记录</b>。</p>
+  <p>因新增 PHONE 提款方式，需在提现相关报表中体现<b>账户类型</b>及<b>手机号</b>（6.1、6.2）；同时为两张记录报表补充<b>三方订单号</b>（6.3）。涉及「商户财务管理」菜单下的报表：<b>会员提现审核</b>、<b>提现订单记录</b>、<b>提现审核记录</b>。</p>
 
   <h2 id="sr1">6.1 会员提现审核</h2>
   <p>在「提款信息」栏补充两项字段：</p>
@@ -302,6 +303,17 @@ b,strong{color:#1a1a2e}
     <tbody>
       <tr><td>提款方式</td><td>选项改为 <b>全部 / PIX</b>（与列表「提款方式」取值一致）。</td></tr>
       <tr><td>账户类型（新增）</td><td>位于「提款方式」之后。<b>联动</b>：提款方式 = PIX 时，账户类型可选 <b>CPF / PHONE</b>；提款方式 = 全部 时，账户类型为空，下拉展示「暂无数据」空状态。</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="sr3">6.3 「三方订单号」字段（提现审核记录、提现订单记录）</h2>
+  <p>在<b>提现审核记录</b>与<b>提现订单记录</b>两张报表新增「三方订单号」列，位于「订单号 / 提款订单号」之后，数字格式同订单号。</p>
+  <table>
+    <thead><tr><th style="width:130px">项</th><th>规则</th></tr></thead>
+    <tbody>
+      <tr><td>取值</td><td>记录三方提款返回的三方订单号：<b>三方已返回则显示该订单号，未返回则为空（显示「-」）</b>。</td></tr>
+      <tr><td>位置</td><td>列表「订单号 / 提款订单号」列之后。</td></tr>
+      <tr><td>筛选</td><td>两张报表筛选区各新增「三方订单号」搜索项。</td></tr>
     </tbody>
   </table>
 </div>
@@ -338,10 +350,10 @@ b,strong{color:#1a1a2e}
   <table>
     <thead><tr><th style="width:210px">场景</th><th>中文</th><th>葡语（建议）</th></tr></thead>
     <tbody>
-      <tr><td>客户端取款页 · CPF 重复</td><td>该 CPF 已被绑定，无法提交提现</td><td>Este CPF já está vinculado a outra conta e não pode ser usado.</td></tr>
-      <tr><td>客户端取款页 · 手机号重复</td><td>该手机号已被绑定，无法提交提现</td><td>Este telefone já está vinculado a outra conta e não pode ser usado.</td></tr>
-      <tr><td>客户端提款信息管理 · 保存</td><td>该 CPF / 手机号已被其他会员使用，无法保存</td><td>Este CPF / telefone já está em uso por outra conta.</td></tr>
-      <tr><td>后台会员详情 · 保存</td><td>该 CPF / 手机号已被其他会员绑定，无法保存</td><td>—（后台，中文）</td></tr>
+      <tr><td>客户端取款页 · CPF 重复</td><td>该 CPF 已被绑定</td><td>Este CPF já está vinculado.</td></tr>
+      <tr><td>客户端取款页 · 手机号重复</td><td>该手机号已被绑定</td><td>Este telefone já está vinculado.</td></tr>
+      <tr><td>客户端提款信息管理 · 保存</td><td>该 CPF / 手机号已被绑定</td><td>Este CPF / telefone já está vinculado.</td></tr>
+      <tr><td>后台会员详情 · 保存</td><td>该 CPF / 手机号已被绑定</td><td>—（后台，中文）</td></tr>
     </tbody>
   </table>
 </div>
